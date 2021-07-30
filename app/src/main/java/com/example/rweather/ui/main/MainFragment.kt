@@ -1,15 +1,17 @@
 package com.example.rweather.ui.main
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import com.example.rweather.R
 import com.example.rweather.databinding.MainFragmentBinding
 import com.example.rweather.model.AppState
+import com.example.rweather.model.data.Weather
 import com.google.android.material.snackbar.Snackbar
 
 class MainFragment : Fragment() {
@@ -51,16 +53,17 @@ class MainFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.getLivaData().observe(viewLifecycleOwner, Observer { a -> renderData(a) })
+
         //val observer = Observer<AppState> { a -> renderData(a) }
         //viewModel.get().observe(viewLifecycleOwner, observer)
-        viewModel.getWeather()
+        viewModel.getWeatherFromRemoateSource()
     }
     private fun renderData(data: AppState) {
         when(data){
             is AppState.Success -> {
                 val weatherData = data.weatherData
                 binding.loadingLayout.visibility = View.GONE
-                binding.message.text = weatherData
+                populateData(weatherData)
             }
             is AppState.Loading -> {
                 binding.loadingLayout.visibility = View.VISIBLE
@@ -72,9 +75,21 @@ class MainFragment : Fragment() {
         }
         //Toast.makeText(context, "data", Toast.LENGTH_LONG).show()
         //Snackbar.make(context, "data", Snackbar.LENGTH_LONG)
+
         Toast.makeText(context, "It is a toast ", Toast.LENGTH_SHORT).show();
     }
 
-
+    private fun populateData(weatherData: Weather) {
+        with(binding) {
+            cityName.text = weatherData.city.city
+            cityCoordinates.text = String.format(
+                getString(R.string.city_coordinates),
+                weatherData.city.lat.toString(),
+                weatherData.city.lon.toString()
+            )
+            temperatureValue.text = weatherData.temperature.toString()
+            feelsLikeValue.text = weatherData.feelsLike.toString()
+        }
+    }
 
 }
